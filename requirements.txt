@@ -3,3 +3,6 @@ google-api-python-client==1.6.7
 jupyter==1.0.0
 
 stanford-corenlp
+sutime
+
+BeautifulSoup4
