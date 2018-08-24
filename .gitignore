@@ -1,6 +1,12 @@
+# Virtual environment
 venv/
+
+# Data
+listings/
+
+# Personal data
 credentials/
 
+# Misc
 stanford-corenlp-full-2018-02-27/
-
-listings/
+src_old/
