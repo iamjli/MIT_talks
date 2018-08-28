@@ -7,7 +7,7 @@ import os
 from session import Session
 
 
-list_id = "mitml"
+list_id = "bestudents"
 base_url = "http://mailman.mit.edu/mailman/private/"
 local_dir = '../listings/'
 
@@ -15,7 +15,7 @@ local_dir = '../listings/'
 def main(): 
 
 	# Initialize session
-	s = Session()
+	s = Session(session_ID=list_id)
 
 	# Request home
 	home_url = os.path.join(base_url, list_id)

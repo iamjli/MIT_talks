@@ -22,27 +22,9 @@ from dateutil import parser
 from sutime import SUTime
 
 
-list_id = "mitml"
-base_url = "http://mailman.mit.edu/mailman/private/"
 
-local_dir = '../listings/'
-local_list_dir = os.path.join(local_dir, list_id)
-local_list_dir
-
-
-
-
-# Instantiate SUTime object
-jar_files = "../../packages/python-sutime/jars/"
-
-try:
-	sutime = SUTime(jars=jar_files, mark_time_ranges=True, include_range=True)
-except OSError: 
-	sutime = SUTime(jars=jar_files, jvm_started=True, mark_time_ranges=True, include_range=True)
-
-
+# Helper functions
 flatten = lambda l: [item for sublist in l for item in sublist]
-
 
 def highlight_string(text, start, end): 
 	# Bolds and colors string indexed by start and end locations
@@ -52,20 +34,17 @@ def get_datetime_type(text):
 	try: 
 		datetime.strptime(text, '%Y-%m-%d')
 		return 'date'
-	except (ValueError, TypeError): 
-		pass
+	except (ValueError, TypeError): pass
 
 	try: 
 		datetime.strptime(text, '%Y-%m-%dT%H:%M')
 		return 'datetime'
-	except (ValueError, TypeError): 
-		pass
+	except (ValueError, TypeError): pass
 
 	try: 
 		datetime.strptime(text, 'T%H:%M')
 		return 'time'
-	except (ValueError, TypeError): 
-		pass
+	except (ValueError, TypeError): pass
 
 	if type(text) == dict and 'begin' in text and 'end' in text: 
 		if get_datetime_type(text['begin']) in ['time', 'datetime'] and get_datetime_type(text['end']) in ['time', 'datetime']:
@@ -74,18 +53,34 @@ def get_datetime_type(text):
 	return 'other'
 
 
+# Instantiate SUTime object
+jar_files = "../../packages/python-sutime/jars/"
+try: sutime = SUTime(jars=jar_files, mark_time_ranges=True, include_range=True)
+except OSError: sutime = SUTime(jars=jar_files, jvm_started=True, mark_time_ranges=True, include_range=True)
+
+# MIT rooms list
+with open('../listings/mit_rooms.csv', 'r') as f: 
+	rooms = [line.split(' ')[0] for line in f.readlines() if '-' in line.split(' ')[0] and len(line.split(' ')[0]) < 15]
+	rooms.sort(key = len, reverse=True)
+
+
 
 class Listing(): 
 
-	def __init__(self, list_id, index): 
+	def __init__(self, list_id, index, local_dir='../listings/'): 
 
 		self.list_id = list_id
 		self.index   = index
-		self.url	 = self._get_url()
 
-		self.html		 = self._get_html()
-		self.title		 = self.html.title.text.strip()
-		self.message	 = self.html.pre.text.strip().split('-------------- next part --------------')[0]
+		self.local_dir      = local_dir
+		self.local_list_dir = os.path.join(self.local_dir, self.list_id)
+		self.local_path     = os.path.join(self.local_dir, self.list_id, self.index)
+
+
+		self.url   	 = self._get_url()
+		self.html    = self._get_html()
+		self.title	 = self.html.title.text.strip()
+		self.message = self.html.pre.text.strip().split('-------------- next part --------------')[0]
 
 		self.posted_time = parser.parse(self.html.i.text, fuzzy=True).isoformat()
 		self.posted_date = self.posted_time.split("T")[0]
@@ -96,7 +91,7 @@ class Listing():
 
 	def _get_url(self): 
 
-		with open(os.path.join(local_list_dir, 'urls.txt'), 'r') as f: 
+		with open(os.path.join(self.local_list_dir, 'urls.txt'), 'r') as f: 
 			urls = [line.rstrip() for line in f.readlines()]
 
 		for url in urls: 
@@ -105,11 +100,23 @@ class Listing():
 
 	def _get_html(self): 
 
-		local_path = os.path.join(local_dir, self.list_id, self.index)
-
-		if os.path.isfile(local_path): 
-			with open(local_path, 'r') as f: 
+		if os.path.isfile(self.local_path): 
+			with open(self.local_path, 'r') as f: 
 				return BeautifulSoup(''.join(f.readlines()), 'html.parser')
+
+
+	def get_location(self): 
+
+		matches = []
+		for room in rooms: 
+			if room in self.message and room not in ' '.join([match[0] for match in matches]):
+				matches.append([room, self.message.find(room)]) 
+		matches.sort(key=lambda x: x[1]) 
+
+		if len(matches) == 0: 
+			self.predict_location = "NA" 
+		else: 
+			self.predict_location = matches[0][0]
 
 
 	def get_datetime_predictions(self): 
@@ -129,15 +136,25 @@ class Listing():
 								 self.times_df['time'].apply(lambda x: 1 if x[-2:] in ['00', '15', '30', '45'] else 0.5)
 
 		# Pick top scoring date and times
-		self.predict_date = self.dates_df.groupby(self.dates_df.columns[0]).sum().sort_values('score', ascending=False).index[0]
-		self.predict_start = self.times_df.groupby(self.times_df.columns[0]).sum().sort_values('score', ascending=False).index[0]
+		if len(self.dates_df) == 0: 
+			self.predict_date = "NA"
+		else:
+			self.predict_date = self.dates_df.groupby(self.dates_df.columns[0]).sum().sort_values('score', ascending=False).index[0]
 
-		# Infer the end time from start time by setting each meeting to 1 hour default. 
-		self.predict_end = format(datetime.strptime(self.predict_start, '%H:%M') + timedelta(hours=1), '%H:%M')
-		# If `DURATION` exists, update end time prediction
-		for dic in self.datetime_df[self.datetime_df['format'] == 'dict']['value']: 
-			if self._convert_time_to_pm(dic['begin'].split('T')[1]) == self.predict_start: 
-				self.predict_end = self._convert_time_to_pm(dic['end'].split('T')[1])
+		if len(self.times_df) == 0: 
+			self.predict_start = "NA"
+		else:
+			self.predict_start = self.times_df.groupby(self.times_df.columns[0]).sum().sort_values('score', ascending=False).index[0]
+
+		if self.predict_start == "NA": 
+			self.predict_end = "NA"
+		else:
+			# Infer the end time from start time by setting each meeting to 1 hour default. 
+			self.predict_end = format(datetime.strptime(self.predict_start, '%H:%M') + timedelta(hours=1), '%H:%M')
+			# If `DURATION` exists, update end time prediction
+			for dic in self.datetime_df[self.datetime_df['format'] == 'dict']['value']: 
+				if self._convert_time_to_pm(dic['begin'].split('T')[1]) == self.predict_start: 
+					self.predict_end = self._convert_time_to_pm(dic['end'].split('T')[1])
 
 
 	def get_sutime_results_as_dataframe(self, text): 
@@ -259,13 +276,6 @@ class Listing():
 		if time < '08:00': 
 			return format(datetime.strptime(time, '%H:%M') + timedelta(hours=12),'%H:%M')
 		return time
-
-
-
-	# Modify text if needed
-	# Apply parser to title and message
-	# Merge
-
 
 
 

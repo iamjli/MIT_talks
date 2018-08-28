@@ -6,3 +6,4 @@ stanford-corenlp
 sutime
 
 BeautifulSoup4
+browser-cookie3
