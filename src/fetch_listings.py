@@ -3,19 +3,14 @@
 # Core python modules
 import os
 
-# Peripheral python modules
-import pickle
-
 # Web scraping modules
-import json
-import requests
-from bs4 import BeautifulSoup
 from session import Session
 
 
 list_id = "mitml"
 base_url = "http://mailman.mit.edu/mailman/private/"
 local_dir = '../listings/'
+
 
 def main(): 
 

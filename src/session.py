@@ -32,7 +32,7 @@ class Session():
 
 		
 	def _init_login(self): 
-		
+		# First login to obtain cookies
 		session = requests.session()
 		session.post("http://mailman.mit.edu/mailman/private/mitml/", self.login_data) 
 
@@ -40,7 +40,7 @@ class Session():
 
 
 	def _save_session(self): 
-
+		# Save session cookies
 		with open(COOKIES_PATH, 'wb') as f: 
 			pickle.dump(requests.utils.dict_from_cookiejar(self.session.cookies), f)
 
@@ -48,7 +48,7 @@ class Session():
 
 
 	def _load_session(self): 
-
+		# Load session from cookies
 		with open(COOKIES_PATH, 'rb') as f: 
 			session = requests.session()
 			session.cookies = requests.utils.cookiejar_from_dict(pickle.load(f))
@@ -59,6 +59,6 @@ class Session():
 
 
 	def get_html(self, url): 
-
+		# Return HRML for a given URL
 		response = self.session.post(url)
 		return BeautifulSoup(response.text, 'html.parser')
