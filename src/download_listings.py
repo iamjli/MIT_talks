@@ -88,3 +88,16 @@ class ListServe():
 			f.write(str(self.s.get_html(url)))
 			print("New listing found and written to: "+local_path)
 
+
+def main(): 
+
+	list_serves = [ 'mitml', 'bestudents' ]
+
+	for list_id in list_serves: 
+
+		l = ListServe(list_id)
+		l.update_local_dir()
+
+
+if __name__ == "__main__":
+	main()

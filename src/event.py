@@ -10,9 +10,9 @@ import numpy as np
 
 
 
-class Event(): 
+class Events(): 
 
 	def __init__(self): 
 
-		
+
 

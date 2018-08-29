@@ -78,12 +78,15 @@ class Listing():
 		# Extract content from listing
 		self.url   	 = self._get_url()
 		self.html    = self._get_html()
+		
+		if self.html == None: return 
+
 		self.title	 = self.html.title.text.strip()
 		self.message = self.html.pre.text.strip().split('-------------- next part --------------')[0]
 
 		# Initial processing of the listing
 		self.is_talk       = self._is_talk()
-		# self.is_correction = self._is_correction()
+		self.is_correction = self._is_correction()
 
 		self.posted_time = parser.parse(self.html.i.text, fuzzy=True).isoformat()
 		self.posted_date = self.posted_time.split("T")[0]
@@ -107,12 +110,27 @@ class Listing():
 
 		if os.path.isfile(self.local_path): 
 			with open(self.local_path, 'r') as f: 
-				return BeautifulSoup(''.join(f.readlines()), 'html.parser')
+				lines = f.readlines()
+				if len(lines) > 0: 
+					return BeautifulSoup(''.join(lines), 'html.parser')
+				else: 
+					self.is_talk = False
+					return None
 
 
 	def _is_talk(self): 
 
-		keywords = ['talk', 'seminar', 'thesis defense']
+		keywords = [ 'talk', 'seminar', 'thesis defense' ]
+
+		for keyword in keywords: 
+			if keyword in self.title.lower(): return True
+
+		return False
+
+
+	def _is_correction(self): 
+
+		keywords = [ 'change', 'correction' ]
 
 		for keyword in keywords: 
 			if keyword in self.title.lower(): return True
@@ -143,6 +161,19 @@ class Listing():
 				'dateTime': parser.parse('T'.join([date, end])).isoformat(), 
 				'timeZone': 'America/New_York'	
 			}
+
+		return event
+
+
+	def get_parsed_metadata_dense(self): 
+
+		event = self.get_parsed_metadata() 
+
+		event['message'] = self.message
+		event['is_talk'] = self.is_talk
+		event['is_correction'] = self.is_correction
+		event['posted_date'] = self.posted_date
+		event['index'] = self.index
 
 		return event
 
@@ -291,7 +322,7 @@ class Listing():
 	def _remove_list_info(self, text): 
 
 		# Remove whitespace from ends
-		# TODO: remove "Fwd:" tags
+		# TODO: remove "Fwd:" tags and dates
 		text = text.strip()
 		# If text begins with left brackets, remove the first instance of enclosed text
 		if text[0] in ['(', '[']: 
