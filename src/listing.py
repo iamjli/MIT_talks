@@ -71,15 +71,20 @@ class Listing():
 		self.list_id = list_id
 		self.index   = index
 
+		# Set local directories
 		self.local_dir      = local_dir
 		self.local_list_dir = os.path.join(self.local_dir, self.list_id)
 		self.local_path     = os.path.join(self.local_dir, self.list_id, self.index)
 
-
+		# Extract content from listing
 		self.url   	 = self._get_url()
 		self.html    = self._get_html()
 		self.title	 = self.html.title.text.strip()
 		self.message = self.html.pre.text.strip().split('-------------- next part --------------')[0]
+
+		# Initial processing of the listing
+		self.is_talk       = self._is_talk()
+		# self.is_correction = self._is_correction()
 
 		self.posted_time = parser.parse(self.html.i.text, fuzzy=True).isoformat()
 		self.posted_date = self.posted_time.split("T")[0]
@@ -87,6 +92,8 @@ class Listing():
 		self.title_mod = self._replace_month_date(self.title)
 		self.message_mod = self._replace_month_date(self.message)
 
+
+	###### HELPER FUNCTIONS ######
 
 	def _get_url(self): 
 
@@ -103,35 +110,42 @@ class Listing():
 			with open(self.local_path, 'r') as f: 
 				return BeautifulSoup(''.join(f.readlines()), 'html.parser')
 
-	def _remove_list_info(self, text): 
 
-		# Remove whitespace from ends
-		text = text.strip()
-		# If text begins with left brackets, remove the first instance of enclosed text
-		if text[0] in ['(', '[']: 
-			text = re.sub("[\(\[].*?[\)\]]", "", text, count=1)
-			# In case there are several brackets, run it again
-			return self._remove_list_info(text)
+	def _is_talk(self): 
 
-		return text
+		keywords = ['talk', 'seminar', 'thesis defense']
 
+		for keyword in keywords: 
+			if keyword in self.title.lower(): return True
+
+		return False
+
+
+	###### PARSE LISTING ######
 
 	def get_parsed_metadata(self): 
 
-		data = {}
+		event = {} 
 
 		title = self._remove_list_info(self.title)
 		location = self.get_location()
 		date, start, end = self.get_datetime_predictions()
 
-		data['title'] = title
-		if location != "NA": data['loc'] = location
+		event['summary'] = title
+		event['description'] = self.url
+		if location != "NA": event['location'] = location
 
 		if date != "NA" and start != "NA" and end != "NA": 
-			data['start'] = parser.parse('T'.join([date, start])).isoformat()
-			data['end']   = parser.parse('T'.join([date, end])).isoformat()
+			event['start'] = {
+				'dateTime': parser.parse('T'.join([date, start])).isoformat(), 
+				'timeZone': 'America/New_York'
+			}
+			event['end'] = {
+				'dateTime': parser.parse('T'.join([date, end])).isoformat(), 
+				'timeZone': 'America/New_York'	
+			}
 
-		return data
+		return event
 
 
 	def get_location(self): 
@@ -187,6 +201,8 @@ class Listing():
 
 		return predict_date, predict_start, predict_end
 
+
+	###### HELPERS FOR DATETIME PARSING ######
 
 	def get_sutime_results_as_dataframe(self, text): 
 
@@ -261,6 +277,8 @@ class Listing():
 		return dates_df, times_df
 
 
+	###### BASIC TEXT PROCESSING ######
+
 	def highlight_text(self, text): 
 
 		results = sutime.parse(text, self.posted_date)
@@ -271,16 +289,18 @@ class Listing():
 		print(text)
 
 
+	def _remove_list_info(self, text): 
 
-	def is_talk(self): 
+		# Remove whitespace from ends
+		# TODO: remove "Fwd:" tags
+		text = text.strip()
+		# If text begins with left brackets, remove the first instance of enclosed text
+		if text[0] in ['(', '[']: 
+			text = re.sub("[\(\[].*?[\)\]]", "", text, count=1)
+			# In case there are several brackets, run it again
+			return self._remove_list_info(text)
 
-		keywords = ['talk', 'seminar', 'thesis defense']
-
-		for keyword in keywords: 
-
-			if keyword in self.title.lower(): return True
-
-		return False
+		return text
 
 
 	def _replace_month_date(self, text): 
@@ -302,9 +322,16 @@ class Listing():
 
 		return text
 
+
 	def _convert_time_to_pm(self, time): 
 
 		if time < '08:00': 
 			return format(datetime.strptime(time, '%H:%M') + timedelta(hours=12),'%H:%M')
 		return time
 
+
+	def __str__(self):
+		return self.index
+
+	def __repr__(self): 
+		return self.__str__()
