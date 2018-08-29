@@ -11,6 +11,11 @@ import json
 import requests
 from bs4 import BeautifulSoup
 
+# Google API modules
+from googleapiclient.discovery import build
+from httplib2 import Http
+from oauth2client import file, client, tools
+
 
 class Session(): 
 
@@ -61,3 +66,85 @@ class Session():
 		# Return HRML for a given URL
 		response = self.session.post(url)
 		return BeautifulSoup(response.text, 'html.parser')
+
+
+class GoogleCalAPI(): 
+
+	def __init__(self): 
+
+		self.service = self._get_service()
+
+		self.calendar_list = self.get_calendar_list()
+
+
+	def _get_service(self): 
+
+		# Setup the Gmail API
+		SCOPES = 'https://www.googleapis.com/auth/calendar'
+
+		store = file.Storage('../credentials/credentials.json')
+		creds = store.get()
+		if not creds or creds.invalid:
+			flow = client.flow_from_clientsecrets('../credentials/client_secret.json', SCOPES)
+			creds = tools.run_flow(flow, store)
+
+		service = build('calendar', 'v3', http=creds.authorize(Http()))
+
+		return service
+
+
+	###### CALENDAR OPERATIONS #######
+	def get_calendar_list(self): 
+
+		return self.service.calendarList().list().execute().get('items')
+
+
+	def get_calendar_ID(self, calendar_name): 
+		# Get first instance of matching calendar name, or create new calendar if it does not exist
+		results = [ cal['id'] for cal in self.calendar_list if cal.get('summary') == calendar_name ]
+
+		if len(results) > 0: return results[0]
+		else: return self.create_calendar(calendar_name)
+
+
+	def create_calendar(self, calendar_name): 
+		# Create new calendar
+		calendar = {
+			'summary': calendar_name,
+			'timeZone': 'America/New_York'
+		}
+
+		created_calendar = self.service.calendars().insert(body=calendar).execute()
+
+		return created_calendar['id']
+
+
+	####### EVENT OPERATIONS #######
+
+	def create_event(self, calendar_id, metadata): 
+
+		event = self.service.events().insert(calendarId="q1oe2irjcmts5kuvciplf5qqb4@group.calendar.google.com", body=metadata).execute()
+		print('Event created: %s' % (event.get('htmlLink')))
+
+		return event
+
+
+	def edit_event(self): 
+
+		pass
+
+
+	def delete_event(self): 
+
+		pass
+
+
+
+
+
+
+
+
+
+
+

@@ -9,13 +9,9 @@ import numpy as np
 from difflib import SequenceMatcher
 # import datetime
 
-# Google API modules
-from googleapiclient.discovery import build
-from httplib2 import Http
-from oauth2client import file, client, tools
-
 # External modules
 from listing import Listing
+from session import GoogleCalAPI
 
 
 similarity = lambda a,b: SequenceMatcher(None, a, b).ratio()
@@ -23,16 +19,20 @@ similarity = lambda a,b: SequenceMatcher(None, a, b).ratio()
 
 class Events(): 
 
-	def __init__(self): 
+	def __init__(self, calendar_name): 
 
-		self.local_dir = '../listings/'
+		self.local_dir     = '../listings/'
 		self.manifest_path = '../listings/mitml/manifest.txt'
-		self.urls_path = '../listings/mitml/urls.txt'
+		self.urls_path     = '../listings/mitml/urls.txt'
+
+		self.cal_name = calendar_name
 
 		self.manifest = self._read_manifest()
-		self.urls = self._get_urls()
+		self.urls     = self._get_urls()
 
 		self.new_urls = self._get_new_paths()
+
+		self.service = None
 
 
 	###### READ / WRITE ######
@@ -86,13 +86,17 @@ class Events():
 			print(l.url)
 			# TODO: replace -30 with something better
 			metadata = self.get_listing_metadata(self.manifest[-30:], l)
-			self.manifest = self.manifest.append(metadata, ignore_index=True)
 
 			# If new listing is a talk, check if it's a new one OR a corrected listing
-			if is_talk:
-				if metadata['event_id'] == max(self.manifest['event_id']) or metadata['is_correction']: 
-					# TODO: Post to calendar
-					pass
+			if metadata['is_talk']:
+				if metadata['event_id'] == self.manifest['event_id'].max()+1 or metadata['is_correction'] or len(self.manifest) == 0: 
+
+					self.push_to_google_calendar(metadata)
+					metadata['pushed_to_cal'] = True
+					self._save_manifest()
+
+			self.manifest = self.manifest.append(metadata, ignore_index=True)
+
 
 	def get_listing_metadata(self, previous_listing_rows, current_listing): 
 
@@ -116,4 +120,14 @@ class Events():
 			metadata['event_id'] = max(self.manifest['event_id']) + 1
 
 		return metadata
+
+
+	###### CALENDAR OPERATIONS ######
+
+	def push_to_google_calendar(self, metadata): 
+
+		if self.service == None: 
+			self.service = GoogleCalAPI()
+
+		self.service.create_event('mitml', metadata)
 
