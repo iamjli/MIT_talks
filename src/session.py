@@ -12,17 +12,15 @@ import requests
 from bs4 import BeautifulSoup
 
 
-MIT_LOGIN_PATH = '../credentials/MIT_login.json'
-
 class Session(): 
 
-	def __init__(self, session_ID):
+	def __init__(self, list_id, login='../credentials/MIT_login.json'):
 
-		self.session_ID = session_ID
-		self.cookies_path = '../credentials/cookies.{}.pkl'.format(self.session_ID)
+		self.list_id = list_id
+		self.cookies_path = '../credentials/cookies.{}.pkl'.format(self.list_id)
 
 		# Import login data
-		self.login_data = json.load(open(MIT_LOGIN_PATH))
+		self.login_data = json.load(open(login))
 
 		# Try reopenning session with cookies, otherwise open new session
 		try: 
@@ -35,7 +33,7 @@ class Session():
 	def _init_login(self): 
 		# First login to obtain cookies
 		session = requests.session()
-		session.post("http://mailman.mit.edu/mailman/private/{}/".format(self.session_ID), self.login_data) 
+		session.post("http://mailman.mit.edu/mailman/private/{}/".format(self.list_id), self.login_data) 
 
 		return session
 

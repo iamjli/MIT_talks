@@ -66,15 +66,14 @@ with open('../listings/mit_rooms.csv', 'r') as f:
 
 class Listing(): 
 
-	def __init__(self, list_id, index, local_dir='../listings/'): 
+	def __init__(self, list_id, index, local_lising_dir='../listings/'): 
 
 		self.list_id = list_id
 		self.index   = index
 
 		# Set local directories
-		self.local_dir      = local_dir
-		self.local_list_dir = os.path.join(self.local_dir, self.list_id)
-		self.local_path     = os.path.join(self.local_dir, self.list_id, self.index)
+		self.local_dir  = os.path.join(local_lising_dir, self.list_id)
+		self.local_path = os.path.join(self.local_dir, self.index)
 
 		# Extract content from listing
 		self.url   	 = self._get_url()
@@ -97,7 +96,7 @@ class Listing():
 
 	def _get_url(self): 
 
-		with open(os.path.join(self.local_list_dir, 'urls.txt'), 'r') as f: 
+		with open(os.path.join(self.local_dir, 'urls.txt'), 'r') as f: 
 			urls = [line.rstrip() for line in f.readlines()]
 
 		for url in urls: 
