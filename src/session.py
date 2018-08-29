@@ -31,7 +31,7 @@ class Session():
 	def __init__(self, list_id, login='../credentials/MIT_login.json'):
 
 		self.list_id = list_id
-		self.cookies_path = '../credentials/cookies.{}.pkl'.format(self.list_id)
+		self.cookies_path = '../credentials/.cookies/cookies.{}.pkl'.format(self.list_id)
 
 		# Import login data
 		self.login_data = json.load(open(login))
@@ -53,6 +53,10 @@ class Session():
 
 
 	def _save_session(self): 
+		# Check that cookies folder exists and create if not
+		if not os.path.isdir(os.path.dirname(self.cookies_path)): 
+			os.makedirs(os.path.dirname(self.cookies_path))
+
 		# Save session cookies
 		with open(self.cookies_path, 'wb') as f: 
 			pickle.dump(requests.utils.dict_from_cookiejar(self.session.cookies), f)
@@ -75,6 +79,8 @@ class Session():
 		# Return HRML for a given URL
 		response = self.session.post(url)
 		return BeautifulSoup(response.text, 'html.parser')
+
+
 
 
 class GoogleCalAPI(): 
@@ -102,7 +108,10 @@ class GoogleCalAPI():
 		return service
 
 
-	###### CALENDAR OPERATIONS #######
+	##########################################
+	#####     GCAL CALENDAR WRAPPERS     #####
+	##########################################
+
 	def get_calendar_list(self): 
 
 		return self.service.calendarList().list().execute().get('items')
@@ -132,7 +141,9 @@ class GoogleCalAPI():
 		return created_calendar['id']
 
 
-	####### EVENT OPERATIONS #######
+	#######################################
+	#####     GCAL EVENT WRAPPERS     #####
+	#######################################
 
 	def create_event(self, calendar_name, metadata): 
 

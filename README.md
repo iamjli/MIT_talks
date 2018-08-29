@@ -9,6 +9,11 @@ Features:
  * Makes titles easier to read. 
 
 
+# Run 
+
+`python update_calendar.py`
+
+
 # Downloads
 
 ## Stanford CoreNLP

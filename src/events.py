@@ -43,36 +43,9 @@ class Events():
 		self.service = None
 
 
-	###### READ / WRITE ######
-
-	def _get_urls(self): 
-
-		with open(os.path.join(self.urls_path), 'r') as f: 
-			return [line.rstrip() for line in f.readlines()]
-
-
-	def _read_manifest(self): 
-
-		if os.path.exists(self.manifest_path): 
-			return pd.read_csv(self.manifest_path, sep='\t')
-		else: 
-			return pd.DataFrame([], columns=['description', 'message', 'event_id', 'is_correction', 'is_talk'])
-
-
-	def _get_new_paths(self): 
-
-		old_urls = self.manifest['description'].tolist() # description = url
-		new_urls = [url for url in self.urls if url not in old_urls]
-
-		return new_urls
-
-
-	def _save_manifest(self): 
-		
-		self.manifest.to_csv(self.manifest_path, sep='\t', index=False)
-
-
-	###### MANIFEST OPERATIONS ######
+	###################################
+	#####     UPDATE MANIFEST     #####
+	###################################
 
 	def update_manifest(self): 
 
@@ -130,7 +103,36 @@ class Events():
 		return metadata
 
 
-	###### CALENDAR OPERATIONS ######
+	################################
+	#####     READ / WRITE     #####
+	################################
+
+	def _get_urls(self): 
+
+		with open(os.path.join(self.urls_path), 'r') as f: 
+			return [line.rstrip() for line in f.readlines()]
+
+
+	def _read_manifest(self): 
+
+		if os.path.exists(self.manifest_path): 
+			return pd.read_csv(self.manifest_path, sep='\t')
+		else: 
+			return pd.DataFrame([], columns=['description', 'message', 'event_id', 'is_correction', 'is_talk'])
+
+
+	def _get_new_paths(self): 
+
+		old_urls = self.manifest['description'].tolist() # description = url
+		new_urls = [url for url in self.urls if url not in old_urls]
+
+		return new_urls
+
+
+	def _save_manifest(self): 
+		
+		self.manifest.to_csv(self.manifest_path, sep='\t', index=False)
+
 
 	def push_to_google_calendar(self, metadata): 
 

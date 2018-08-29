@@ -21,39 +21,23 @@ class ListServe():
 		self.s = Session(self.list_id)
 
 
-	def update_local_dir(self): 
+	####################################
+	#####     UPDATE FUNCTIONS     #####
+	####################################
 
+	def update_local_dir(self): 
+		# Find new listings and save them locally
 		urls = self.get_new_listings()
 
 		for url in urls: 
 			self.save_listing(url) 
 			self.local_urls.append(url)
 
+		# Update url manifest
 		self.update_manifest()
 		print("{} new listings added.".format(len(urls)))
 
-
-	###### MANIFEST OPERATIONS ######
-	def get_local_manifest(self): 
-
-		# Check if local directory exists, create if not.
-		if os.path.isdir(self.local_dir): 
-			if os.path.isfile(self.local_urls_path): 
-				with open(self.local_urls_path, 'r') as f: 
-					return [x.rstrip() for x in f.readlines()]
-		else: 
-			os.makedirs(self.local_dir)
-
-		return []
-
-
-	def update_manifest(self): 
-
-		with open(self.local_urls_path, 'w') as f: 
-			f.write('\n'.join(self.local_urls))
-
-
-	###### LISTING OPERATIONS ######
+	
 	def get_new_listings(self): 
 
 		# Request home
@@ -77,6 +61,28 @@ class ListServe():
 					urls.append(url)
 				else: 
 					return urls
+
+
+	################################
+	#####     READ / WRITE     #####
+	################################
+
+	def get_local_manifest(self): 
+
+		# Check if local directory exists, create if not.
+		if os.path.isdir(self.local_dir): 
+			if os.path.isfile(self.local_urls_path): 
+				with open(self.local_urls_path, 'r') as f: 
+					return [x.rstrip() for x in f.readlines()]
+		else: 
+			os.makedirs(self.local_dir)
+
+		return []
+
+	def update_manifest(self): 
+
+		with open(self.local_urls_path, 'w') as f: 
+			f.write('\n'.join(self.local_urls))
 
 
 	def save_listing(self, url): 

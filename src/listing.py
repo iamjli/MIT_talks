@@ -76,11 +76,10 @@ class Listing():
 		self.local_path = os.path.join(self.local_dir, self.index)
 
 		# Extract content from listing
-		self.url   	 = self._get_url()
-		self.html    = self._get_html()
-		
+		self.url  = self._get_url()
+		self.html = self._get_html()
+		# Sometimes the message body is empty so this return statement is required to avoid triggering errors
 		if self.html == None: return 
-
 		self.title	 = self.html.title.text.strip()
 		self.message = self.html.pre.text.strip().split('-------------- next part --------------')[0]
 
@@ -91,54 +90,13 @@ class Listing():
 		self.posted_time = parser.parse(self.html.i.text, fuzzy=True).isoformat()
 		self.posted_date = self.posted_time.split("T")[0]
 
-		self.title_mod = self._replace_month_date(self.title)
+		self.title_mod   = self._replace_month_date(self.title)
 		self.message_mod = self._replace_month_date(self.message)
 
 
-	###### HELPER FUNCTIONS ######
-
-	def _get_url(self): 
-
-		with open(os.path.join(self.local_dir, 'urls.txt'), 'r') as f: 
-			urls = [line.rstrip() for line in f.readlines()]
-
-		for url in urls: 
-			if self.index in url: return url
-
-
-	def _get_html(self): 
-
-		if os.path.isfile(self.local_path): 
-			with open(self.local_path, 'r') as f: 
-				lines = f.readlines()
-				if len(lines) > 0: 
-					return BeautifulSoup(''.join(lines), 'html.parser')
-				else: 
-					self.is_talk = False
-					return None
-
-
-	def _is_talk(self): 
-
-		keywords = [ 'talk', 'seminar', 'thesis defense' ]
-
-		for keyword in keywords: 
-			if keyword in self.title.lower(): return True
-
-		return False
-
-
-	def _is_correction(self): 
-
-		keywords = [ 'change', 'correction' ]
-
-		for keyword in keywords: 
-			if keyword in self.title.lower(): return True
-
-		return False
-
-
-	###### PARSE LISTING ######
+	####################################
+	#####     PARSER FUNCTIONS     #####
+	####################################
 
 	def get_parsed_metadata(self): 
 
@@ -232,7 +190,9 @@ class Listing():
 		return predict_date, predict_start, predict_end
 
 
-	###### HELPERS FOR DATETIME PARSING ######
+	############################################
+	#####     DATETIME PARSING HELPERS     #####
+	############################################
 
 	def get_sutime_results_as_dataframe(self, text): 
 
@@ -307,7 +267,9 @@ class Listing():
 		return dates_df, times_df
 
 
-	###### BASIC TEXT PROCESSING ######
+	###################################
+	#####     TEXT PROCESSING     #####
+	###################################
 
 	def highlight_text(self, text): 
 
@@ -360,6 +322,51 @@ class Listing():
 		if time < '08:00': 
 			return format(datetime.strptime(time, '%H:%M') + timedelta(hours=12),'%H:%M')
 		return time
+
+
+	####################################
+	#####     HELPER FUNCTIONS     #####
+	####################################
+
+	def _get_url(self): 
+
+		with open(os.path.join(self.local_dir, 'urls.txt'), 'r') as f: 
+			urls = [line.rstrip() for line in f.readlines()]
+
+		for url in urls: 
+			if self.index in url: return url
+
+
+	def _get_html(self): 
+
+		if os.path.isfile(self.local_path): 
+			with open(self.local_path, 'r') as f: 
+				lines = f.readlines()
+				if len(lines) > 0: 
+					return BeautifulSoup(''.join(lines), 'html.parser')
+				else: 
+					self.is_talk = False
+					return None
+
+
+	def _is_talk(self): 
+
+		keywords = [ 'talk', 'seminar', 'thesis defense' ]
+
+		for keyword in keywords: 
+			if keyword in self.title.lower(): return True
+
+		return False
+
+
+	def _is_correction(self): 
+
+		keywords = [ 'change', 'correction' ]
+
+		for keyword in keywords: 
+			if keyword in self.title.lower(): return True
+
+		return False
 
 
 	def __str__(self):
