@@ -1,7 +1,12 @@
 # MIT_talks
-A way to consolidate MIT talks and seminar listings
+A way to consolidate MIT talks and seminar listings. 
 
-[Gmail Python API](https://developers.google.com/gmail/api/v1/reference/users/messages/get)
+Features: 
+
+ * Parses listserve emails for date, time, and location.
+ * Automatically generates Google Calendar event with this information for talks, seminars, and thesis defense announcements. 
+ * If multiple emails were went for the same event, only one appears in Google Calendar.
+ * Makes titles easier to read. 
 
 
 # Downloads

@@ -100,9 +100,9 @@ class Events():
 
 					self.push_to_google_calendar(metadata)
 					metadata['pushed_to_cal'] = True
-					self._save_manifest()
 
 			self.manifest = self.manifest.append(metadata, ignore_index=True)
+			self._save_manifest()
 			logger.info("Added to manifest: " + l.url)
 
 

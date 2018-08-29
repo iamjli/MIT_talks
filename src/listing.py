@@ -323,14 +323,16 @@ class Listing():
 
 		# Remove whitespace from ends
 		# TODO: remove "Fwd:" tags and dates
-		text = text.strip()
+		new_text = text.strip()
 		# If text begins with left brackets, remove the first instance of enclosed text
-		if text[0] in ['(', '[']: 
-			text = re.sub("[\(\[].*?[\)\]]", "", text, count=1)
-			# In case there are several brackets, run it again
-			return self._remove_list_info(text)
+		if new_text[0] in ['(', '[']: 
+			new_text = re.sub("[\(\[].*?[\)\]]", "", text, count=1)
 
-		return text
+			# In case there are several brackets, run it again. If statement in case left bracket is not closed
+			if new_text == text: 
+				return self._remove_list_info(new_text)
+
+		return new_text
 
 
 	def _replace_month_date(self, text): 
