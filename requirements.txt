@@ -1,10 +1,17 @@
-google-api-python-client==1.6.7
+
+# Data manipulation
+pandas==0.23.0
+
+# Web
+BeautifulSoup4
+
+# Natural language processing
+stanford-corenlp==3.8.0
+sutime==0.2.0
+
+# Google authentication
+google-api-python-client==1.7.4
 oauth2client==4.1.2
 
+# Misc
 jupyter==1.0.0
-
-stanford-corenlp
-sutime
-
-BeautifulSoup4
-browser-cookie3

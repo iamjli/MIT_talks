@@ -8,6 +8,8 @@ Features:
  * If multiple emails were went for the same event, only one appears in Google Calendar.
  * Makes titles easier to read. 
 
+Example: [mitml](https://calendar.google.com/calendar?cid=b3VwMDQzbzVqY2ZuYjd0YWoyYTQzbzcyNDhAZ3JvdXAuY2FsZW5kYXIuZ29vZ2xlLmNvbQ)
+
 
 # Run 
 
