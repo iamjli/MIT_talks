@@ -2,6 +2,7 @@
 
 # Core python modules
 import os
+import logging
 
 # Peripheral python modules
 import pickle
@@ -15,6 +16,14 @@ from bs4 import BeautifulSoup
 from googleapiclient.discovery import build
 from httplib2 import Http
 from oauth2client import file, client, tools
+
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+handler = logging.StreamHandler()
+handler.setLevel(logging.INFO)
+handler.setFormatter(logging.Formatter('%(asctime)s - Session: %(levelname)s - %(message)s', "%I:%M:%S"))
+logger.addHandler(handler)
 
 
 class Session(): 
@@ -48,7 +57,7 @@ class Session():
 		with open(self.cookies_path, 'wb') as f: 
 			pickle.dump(requests.utils.dict_from_cookiejar(self.session.cookies), f)
 
-			print("Session cookies saved to: "+self.cookies_path)
+			logger.info("Session cookies saved to: "+self.cookies_path)
 
 
 	def _load_session(self): 
@@ -57,7 +66,7 @@ class Session():
 			session = requests.session()
 			session.cookies = requests.utils.cookiejar_from_dict(pickle.load(f))
 
-			print("Session cookies loaded from: "+self.cookies_path)
+			logger.info("Session cookies loaded from: "+self.cookies_path)
 
 		return session
 
@@ -108,23 +117,29 @@ class GoogleCalAPI():
 
 
 	def create_calendar(self, calendar_name): 
-		# Create new calendar
+
 		calendar = {
 			'summary': calendar_name,
 			'timeZone': 'America/New_York'
 		}
 
+		# Create new calendar and update calendar list
 		created_calendar = self.service.calendars().insert(body=calendar).execute()
+		self.calendar_list = self.get_calendar_list()
+
+		logger.info("{} calendar created: {}".format(calendar_name, created_calendar['id']))
 
 		return created_calendar['id']
 
 
 	####### EVENT OPERATIONS #######
 
-	def create_event(self, calendar_id, metadata): 
+	def create_event(self, calendar_name, metadata): 
 
-		event = self.service.events().insert(calendarId="q1oe2irjcmts5kuvciplf5qqb4@group.calendar.google.com", body=metadata).execute()
-		print('Event created: %s' % (event.get('htmlLink')))
+		calendar_ID = self.get_calendar_ID(calendar_name)
+
+		event = self.service.events().insert(calendarId=calendar_ID, body=metadata).execute()
+		logger.info('Event created: %s' % (event.get('htmlLink')))
 
 		return event
 

@@ -2,16 +2,24 @@
 
 # Core python modules
 import os
+import logging
 
 # Processing modules
 import pandas as pd
 import numpy as np
 from difflib import SequenceMatcher
-# import datetime
 
 # External modules
 from listing import Listing
 from session import GoogleCalAPI
+
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+handler = logging.StreamHandler()
+handler.setLevel(logging.INFO)
+handler.setFormatter(logging.Formatter('%(asctime)s - Events: %(levelname)s - %(message)s', "%I:%M:%S"))
+logger.addHandler(handler)
 
 
 similarity = lambda a,b: SequenceMatcher(None, a, b).ratio()
@@ -19,11 +27,11 @@ similarity = lambda a,b: SequenceMatcher(None, a, b).ratio()
 
 class Events(): 
 
-	def __init__(self, calendar_name): 
+	def __init__(self, list_id, calendar_name): 
 
 		self.local_dir     = '../listings/'
-		self.manifest_path = '../listings/mitml/manifest.txt'
-		self.urls_path     = '../listings/mitml/urls.txt'
+		self.manifest_path = os.path.join(self.local_dir, list_id, 'manifest.txt')
+		self.urls_path     = os.path.join(self.local_dir, list_id, 'urls.txt')
 
 		self.cal_name = calendar_name
 
@@ -83,12 +91,11 @@ class Events():
 
 		# Then loop through listings and add to manifest
 		for _, l in new_listings: 
-			print(l.url)
 			# TODO: replace -30 with something better
 			metadata = self.get_listing_metadata(self.manifest[-30:], l)
 
-			# If new listing is a talk, check if it's a new one OR a corrected listing
-			if metadata['is_talk']:
+			# If new listing is a talk and contains relevant metadata, check if it's a new one OR a corrected listing
+			if metadata['is_talk'] and 'start' in metadata:
 				if metadata['event_id'] == self.manifest['event_id'].max()+1 or metadata['is_correction'] or len(self.manifest) == 0: 
 
 					self.push_to_google_calendar(metadata)
@@ -96,6 +103,7 @@ class Events():
 					self._save_manifest()
 
 			self.manifest = self.manifest.append(metadata, ignore_index=True)
+			logger.info("Added to manifest: " + l.url)
 
 
 	def get_listing_metadata(self, previous_listing_rows, current_listing): 
@@ -129,5 +137,5 @@ class Events():
 		if self.service == None: 
 			self.service = GoogleCalAPI()
 
-		self.service.create_event('mitml', metadata)
+		self.service.create_event(self.cal_name, metadata)
 
