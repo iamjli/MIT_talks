@@ -101,9 +101,8 @@ class Events():
 
 
 	def similarity(self, a, b): 
-
-		a = a.replace('\n', '').replace('> ', '')
-		b = b.replace('\n', '').replace('> ', '')
+		a = str(a).replace('\n', '').replace('> ', '')
+		b = str(b).replace('\n', '').replace('> ', '')
 
 		return SequenceMatcher(None, a, b).ratio()
 

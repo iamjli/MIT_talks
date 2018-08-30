@@ -140,8 +140,9 @@ class Listing():
 
 		matches = []
 		for room in rooms: 
-			if room in self.message and room not in ' '.join([match[0] for match in matches]):
-				matches.append([room, self.message.find(room)]) 
+			for r in [ room, room.replace('-', '.') ]:
+				if r in self.message and r not in ' '.join([match[0] for match in matches]):
+					matches.append([r, self.message.find(r)]) 
 		matches.sort(key=lambda x: x[1]) 
 
 		if len(matches) == 0: 
@@ -284,14 +285,15 @@ class Listing():
 	def _remove_list_info(self, text): 
 
 		# Remove whitespace from ends
-		# TODO: remove "Fwd:" tags and dates
 		new_text = text.strip()
+		if len(new_text.split(':')[0]) < 4: 
+			new_text = new_text.split(':', 1)[1]
 		# If text begins with left brackets, remove the first instance of enclosed text
 		if new_text[0] in ['(', '[']: 
-			new_text = re.sub("[\(\[].*?[\)\]]", "", text, count=1)
+			new_text = re.sub("[\(\[].*?[\)\]]", "", new_text, count=1)
 
 			# In case there are several brackets, run it again. If statement in case left bracket is not closed
-			if new_text == text: 
+			if new_text != text: 
 				return self._remove_list_info(new_text)
 
 		return new_text
