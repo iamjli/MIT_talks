@@ -22,9 +22,6 @@ handler.setFormatter(logging.Formatter('%(asctime)s - Events: %(levelname)s - %(
 logger.addHandler(handler)
 
 
-similarity = lambda a,b: SequenceMatcher(None, a, b).ratio()
-
-
 class Events(): 
 
 	def __init__(self, list_id, calendar_name): 
@@ -67,9 +64,10 @@ class Events():
 			# TODO: replace -30 with something better
 			metadata = self.get_listing_metadata(self.manifest[-30:], l)
 
-			# If new listing is a talk and contains relevant metadata, check if it's a new one OR a corrected listing
+			# If new listing is a talk and contains relevant metadata
 			if metadata['is_talk'] and 'start' in metadata:
-				if metadata['event_id'] == self.manifest['event_id'].max()+1 or metadata['is_correction'] or len(self.manifest) == 0: 
+				# check if it's a new one OR a corrected listing
+				if (metadata['event_id'] not in self.manifest['event_id'].tolist()) or metadata['is_correction']: 
 
 					self.push_to_google_calendar(metadata)
 					metadata['pushed_to_cal'] = True
@@ -86,13 +84,12 @@ class Events():
 
 		# Assign event_id based on similarity to event 
 		for _,prev_l in previous_listing_rows.iterrows(): 
-			s = similarity(prev_l['message'], metadata['message'])
 
-			if s > 0.5: 
-				metadata['event_id'] = prev_l['event_id']
+			s = self.similarity(prev_l['message'], metadata['message'])
 
-			if prev_l['is_correction'] and s > 0.3: 
+			if s > 0.5 or (prev_l['is_correction'] and s > 0.3): 
 				metadata['event_id'] = prev_l['event_id']
+				return metadata
 
 		# Special case to handle if manifest does not exist
 		if len(self.manifest) == 0: 
@@ -101,6 +98,14 @@ class Events():
 			metadata['event_id'] = max(self.manifest['event_id']) + 1
 
 		return metadata
+
+
+	def similarity(self, a, b): 
+
+		a = a.replace('\n', '').replace('> ', '')
+		b = b.replace('\n', '').replace('> ', '')
+
+		return SequenceMatcher(None, a, b).ratio()
 
 
 	################################
