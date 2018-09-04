@@ -22,9 +22,4 @@ Example: [mitml](https://calendar.google.com/calendar?cid=bGEzaXQ4NGZsM290azlyNG
 
 `wget http://nlp.stanford.edu/software/stanford-corenlp-full-2018-02-27.zip`
 
-Then unzip
-
-## SUTime
-
-`pip3 install sutime`
-
+Then unzip. Then follow instructions for installing [SUTime wrapper](https://github.com/FraBle/python-sutime).

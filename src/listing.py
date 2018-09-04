@@ -286,8 +286,9 @@ class Listing():
 
 		# Remove whitespace from ends
 		new_text = text.strip()
+		if len(new_text) == 0: return "NA"
 		if len(new_text.split(':')[0]) < 4: 
-			new_text = new_text.split(':', 1)[1]
+			new_text = new_text.split(':', 1)[1].strip()
 		# If text begins with left brackets, remove the first instance of enclosed text
 		if new_text[0] in ['(', '[']: 
 			new_text = re.sub("[\(\[].*?[\)\]]", "", new_text, count=1)

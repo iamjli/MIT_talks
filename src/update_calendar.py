@@ -9,7 +9,7 @@ from download_listings import ListServe
 from events import Events
 
 
-LIST_SERVES = [ 'mitml', 'bestudents' ]
+LIST_SERVES = [ 'mitml', 'bestudents', 'stat-events']
 
 
 def main(): 
