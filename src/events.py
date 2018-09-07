@@ -49,13 +49,17 @@ class Events():
 		# First sort new listings by posted date in chronological order
 		new_listings = []
 		for url in self.new_urls: 
-
+			
 			list_id = url.split('/')[-3]
 			index = url.split('/')[-1]
 
 			l = Listing(list_id, index)
 
-			new_listings.append([l.posted_time, l])
+			try: 
+				new_listings.append([l.posted_time, l])
+			except AttributeError: 
+				logger.warning("Attribute Error -- listing excluded from manifest.")
+				pass
 
 		new_listings.sort(key=lambda x: x[0])
 

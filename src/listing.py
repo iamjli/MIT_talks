@@ -79,7 +79,7 @@ class Listing():
 		self.url  = self._get_url()
 		self.html = self._get_html()
 		# Sometimes the message body is empty so this return statement is required to avoid triggering errors
-		if self.html == None: return 
+		if self.html == None or self.html.pre == None: return 
 		self.title	 = self.html.title.text.strip()
 		self.message = self.html.pre.text.strip().split('-------------- next part --------------')[0]
 
@@ -286,7 +286,7 @@ class Listing():
 
 		# Remove whitespace from ends
 		new_text = text.strip()
-		if len(new_text) == 0: return "NA"
+		if len(new_text) < 4: return "NA"
 		if len(new_text.split(':')[0]) < 4: 
 			new_text = new_text.split(':', 1)[1].strip()
 		# If text begins with left brackets, remove the first instance of enclosed text

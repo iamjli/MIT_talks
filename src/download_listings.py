@@ -9,16 +9,17 @@ from session import Session
 
 class ListServe(): 
 
-	def __init__(self, list_id, local_listing_dir='../listings/'): 
+	def __init__(self, list_id, host, local_listing_dir='../listings/'): 
 
 		self.list_id  = list_id
+		self.host     = host
 
 		self.local_dir	     = os.path.join(local_listing_dir, self.list_id)
 		self.local_urls_path = os.path.join(self.local_dir, 'urls.txt')
 
 		self.local_urls = self.get_local_manifest()
 
-		self.s = Session(self.list_id)
+		self.s = Session(self.list_id, self.host)
 
 
 	####################################
@@ -41,7 +42,7 @@ class ListServe():
 	def get_new_listings(self): 
 
 		# Request home
-		home_url = os.path.join("http://mailman.mit.edu/mailman/private/", self.list_id)
+		home_url = os.path.join(self.host, self.list_id)
 		home_html = self.s.get_html(home_url)
 
 		# Get batch URLs (by date)

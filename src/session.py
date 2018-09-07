@@ -28,9 +28,11 @@ logger.addHandler(handler)
 
 class Session(): 
 
-	def __init__(self, list_id, login='../credentials/MIT_login.json'):
+	def __init__(self, list_id, host, login='../credentials/MIT_login.json'):
 
 		self.list_id = list_id
+		self.host    = host
+
 		self.cookies_path = '../credentials/.cookies/cookies.{}.pkl'.format(self.list_id)
 
 		# Import login data
@@ -47,7 +49,7 @@ class Session():
 	def _init_login(self): 
 		# First login to obtain cookies
 		session = requests.session()
-		session.post("http://mailman.mit.edu/mailman/private/{}/".format(self.list_id), self.login_data) 
+		session.post(os.path.join(self.host, self.list_id), self.login_data)
 
 		return session
 
