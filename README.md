@@ -11,6 +11,14 @@ Features:
 Example: [mitml](https://calendar.google.com/calendar?cid=bGEzaXQ4NGZsM290azlyNGpqb2VncGEzNWNAZ3JvdXAuY2FsZW5kYXIuZ29vZ2xlLmNvbQ)
 
 
+# Calendars
+
+[CSAIL-seminars](https://calendar.google.com/calendar?cid=bHEzYjhoMGRsOGJpMGszNDkzdGh0M2pyOGNAZ3JvdXAuY2FsZW5kYXIuZ29vZ2xlLmNvbQ)
+[bestudents](https://calendar.google.com/calendar?cid=ZmllNjZza2w0YjhkcmZkYm1hbDc2NTZrb2dAZ3JvdXAuY2FsZW5kYXIuZ29vZ2xlLmNvbQ)
+[mitml](https://calendar.google.com/calendar?cid=ZmllNjZza2w0YjhkcmZkYm1hbDc2NTZrb2dAZ3JvdXAuY2FsZW5kYXIuZ29vZ2xlLmNvbQ)
+[stats-events](https://calendar.google.com/calendar?cid=ZHV2ZWtwMXNhZWJuaG1raGc3aWJ1OGY5ZWdAZ3JvdXAuY2FsZW5kYXIuZ29vZ2xlLmNvbQ)
+
+
 # Run 
 
 `python update_calendar.py`

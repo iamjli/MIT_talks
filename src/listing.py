@@ -107,7 +107,7 @@ class Listing():
 		date, start, end = self.get_datetime_predictions()
 
 		event['summary'] = title
-		event['description'] = self.url
+		event['description'] = "{}\n{}".format(self.message, self.url)
 		if location != "NA": event['location'] = location
 
 		if date != "NA" and start != "NA" and end != "NA": 
