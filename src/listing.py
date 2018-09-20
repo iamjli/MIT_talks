@@ -354,10 +354,14 @@ class Listing():
 
 	def _is_talk(self): 
 
+		# Generic keywords
 		keywords = [ 'talk', 'seminar', 'thesis defense' ]
-
 		for keyword in keywords: 
 			if keyword in self.title.lower(): return True
+
+		# Special rules
+		if 'BATS' in self.title: 
+			return True
 
 		return False
 
