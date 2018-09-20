@@ -9,5 +9,7 @@ credentials/
 
 # Misc
 stanford-corenlp-full-2018-02-27/
-src_old/
+
+# src files
 src/__pycache__/
+src/*.pyc

@@ -131,7 +131,7 @@ class Events():
 
 	def _get_new_paths(self): 
 
-		old_urls = self.manifest['description'].tolist() # description = url
+		old_urls = [text.split('\n')[-1] for text in self.manifest['description'].tolist()] # description = url
 		new_urls = [url for url in self.urls if url not in old_urls]
 
 		return new_urls
