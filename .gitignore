@@ -6,7 +6,6 @@ credentials/
 
 # Misc
 stanford-corenlp-full-2018-02-27/
-cronjob.sh
 
 ########################################################
 #  Python
